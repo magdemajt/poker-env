@@ -20,6 +20,8 @@ maturin develop --release
 
 ## Usage
 
+One function is available: get_chances
+
 ```python
 >>> from poker_lib import get_chances
 >>> 
@@ -33,3 +35,10 @@ maturin develop --release
 ```
 
 Cards are represented as strings with the following format: `"{rank}{suit}"`. The rank is one of [2, 3, 4, 5, 6, 7, 8, 9, t, j, q, k ,a] and the suit is a letter from `H` (hearts), `D` (diamonds), `C` (clubs) and `S` (spades).
+
+The list of cards must have 2, 5, 6 or 7 cards. Cards are ordered as follows:
+* [0,1] - cards of the agent
+* [2,3,4,5,6] - cards exposed on table.
+
+Number of players is a total number. Our agent + n opponents -> n+1 players
+Number of iterations - number of randomized games played
