@@ -1,0 +1,6 @@
+# This file is needed to utilize rust-analyzer's workspace support
+[workspace]
+
+members = [
+    "poker_lib",
+]

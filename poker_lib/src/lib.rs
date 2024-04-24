@@ -2,6 +2,7 @@ use pyo3::prelude::*;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rs_poker::core::{Card, Deck, Hand, Rank, Rankable};
+// use rayon::prelude::*;
 
 fn get_cards_from_string_vec(string_vec: Vec<String>) -> Vec<Card> {
     string_vec
@@ -88,4 +89,15 @@ fn get_chances(cards: Vec<String>, num_players: u32, iterations: u32) -> f32 {
 fn poker_lib(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_chances, m)?)?;
     Ok(())
+}
+
+
+mod tests{
+    use crate::get_chances;
+
+    #[test]
+    fn exploration() {
+        let chances = get_chances(vec!["As".to_string(), "Ah".to_string()], 2, 100000);
+        print!("{:?}", chances)
+    }
 }
