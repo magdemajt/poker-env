@@ -271,10 +271,14 @@ class Hand:
 class Deck:
     cards: List[Card]
     drawn_index: int
-    def __init__(self):
+    def __init__(self, seed=None):
+        if seed is not None:
+            self._random = random.Random(seed)
+        else:
+            self._random = random.Random()
         self.cards = [Card(suit, value) for suit in Suit for value in CardValue]
     def shuffle(self):
-        random.shuffle(self.cards)
+        self._random.shuffle(self.cards)
         self.drawn_index = 0
     def burn_n(self, n: int):
         self.drawn_index += n
