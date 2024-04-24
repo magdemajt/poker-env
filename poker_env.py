@@ -1,6 +1,7 @@
 import gymnasium as gym
 from enum import Enum
 from player import RLPlayer, PlayerCycle
+from poker_rules import Deck
 
 import numpy as np
 
@@ -31,16 +32,28 @@ class PokerEnv(gym.Env):
             'player_ind': gym.spaces.Discrete(6),
         })
 
-    def reset(self, player_cycle: PlayerCycle):
+    def reset(self, player_cycle: PlayerCycle, seed=None, options=None):
+        if seed is not None:
+            np.random.seed(seed)
+
         self.player_cycle = player_cycle
-        self.n_players = len(player_cycle.get_player_list())
         self.players_playing = np.array([True] * 6)
         self.money = np.array([INITIAL_MONEY] * 6)
         self.round_bets = np.zeros((4, 6), dtype='int32')
         self.round_bets[0, 0] = SMALL_BLIND
         self.round_bets[0, 1] = 2 * SMALL_BLIND
-        self.player_ind = np.zeros(6, dtype='int32')
-        self.player_ind[0] = 1
+        self.money[0] -= SMALL_BLIND
+        player_cycle.next_player()
+        self.money[1] -= 2 * SMALL_BLIND
+        player_cycle.next_player()
+
+        self.deck = Deck()
+        self.deck.shuffle()
+
+        self.user_hands = [self.deck.draw_n(2) for _ in range(6)]
+        self.table_cards = []
+
+        self.round_index = 0
 
         # playing until all non-RL players have played
         while type(player_cycle.get_player()) != RLPlayer:
