@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Any
 
 
 class Player(ABC):
@@ -6,7 +7,7 @@ class Player(ABC):
         self.money = money
 
     @abstractmethod
-    def get_action(self, env):
+    def get_action(self, observation: dict[str, Any], action_space: Any):
         raise NotImplementedError
 
     @abstractmethod
@@ -19,8 +20,8 @@ class Player(ABC):
 
 
 class RandomPlayer(Player):
-    def get_action(self, env):
-        return env.action_space.sample()
+    def get_action(self, observation: dict[str, Any], action_space: Any):
+        return action_space.sample()
 
     def update(self, reward):
         pass
@@ -28,8 +29,9 @@ class RandomPlayer(Player):
     def reset(self):
         pass
 
+
 class RLPlayer(Player):
-    def get_action(self, env):
+    def get_action(self, observation: dict[str, Any], action_space: Any):
         pass
 
     def update(self, reward):
@@ -41,7 +43,7 @@ class RLPlayer(Player):
 
 class HeuristicPlayer(Player):
 
-    def get_action(self, env):
+    def get_action(self, observation: dict[str, Any], action_space):
         pass
 
     def update(self, reward):
@@ -51,7 +53,7 @@ class HeuristicPlayer(Player):
         pass
 
 
-class PlayerCycle():
+class PlayerCycle:
     def __init__(self, players_list):
         self.players_list = players_list
         self.current_player = 0
