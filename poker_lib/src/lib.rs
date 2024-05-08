@@ -92,6 +92,7 @@ fn poker_lib(_py: Python, m: &PyModule) -> PyResult<()> {
     Ok(())
 }
 
+#[cfg(test)]
 mod tests {
     use crate::get_chances;
 
