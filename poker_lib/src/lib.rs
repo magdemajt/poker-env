@@ -1,8 +1,8 @@
 use pyo3::prelude::*;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
-use rayon::prelude::*;
 use rs_poker::core::{Card, Deck, Hand, Rank, Rankable};
+use rayon::prelude::*;
 
 fn get_cards_from_string_vec(string_vec: Vec<String>) -> Vec<Card> {
     string_vec
@@ -14,7 +14,7 @@ fn get_cards_from_string_vec(string_vec: Vec<String>) -> Vec<Card> {
         .collect()
 }
 
-fn play_random_game(number_of_players: u32, given_cards: Vec<Card>) -> bool {
+fn play_random_game(number_of_players: u32, given_cards: &Vec<Card>) -> bool {
     let (main_agent_cards, given_table_cards) = given_cards.split_at(2);
     let mut shuffled_deck_tail = Deck::default()
         .iter()
@@ -79,7 +79,7 @@ fn get_chances(cards: Vec<String>, num_players: u32, iterations: u32) -> f32 {
 
     let total_wins = (0..iterations)
         .into_par_iter()
-        .map(|_| play_random_game(num_players, cards.clone()))
+        .map(|_| play_random_game(num_players, &cards))
         .filter(|&x| x)
         .count() as f32;
 
