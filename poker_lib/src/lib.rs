@@ -1,8 +1,8 @@
 use pyo3::prelude::*;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
-use rs_poker::core::{Card, Deck, Hand, Rank, Rankable};
 use rayon::prelude::*;
+use rs_poker::core::{Card, Deck, Hand, Rank, Rankable};
 
 fn get_cards_from_string_vec(string_vec: Vec<String>) -> Vec<Card> {
     string_vec
@@ -86,19 +86,66 @@ fn get_chances(cards: Vec<String>, num_players: u32, iterations: u32) -> f32 {
     return total_wins / iterations as f32;
 }
 
+#[pyfunction]
+fn get_win_indices(table_cards: Vec<String>, players_hands: Vec<Vec<String>>) -> Vec<u8> {
+    let table_cards = get_cards_from_string_vec(table_cards);
+    let players_hands = players_hands
+        .iter()
+        .map(|x| get_cards_from_string_vec(x.clone()))
+        .collect::<Vec<Vec<Card>>>();
+
+    let extended_players_hands = players_hands
+        .iter()
+        .map(|x| {
+            table_cards
+                .iter()
+                .chain(x.iter())
+                .cloned()
+                .collect::<Vec<Card>>()
+        })
+        .collect::<Vec<Vec<Card>>>();
+
+    let ranks = extended_players_hands
+        .iter()
+        .map(|x| Hand::new_with_cards(x.clone()).rank())
+        .collect::<Vec<Rank>>();
+
+    let max_rank = ranks.iter().max().unwrap();
+    return ranks
+        .iter()
+        .enumerate()
+        .filter(|(_, x)| *x == max_rank)
+        .map(|(i, _)| i as u8)
+        .collect::<Vec<u8>>();
+}
+
 #[pymodule]
 fn poker_lib(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_chances, m)?)?;
+    m.add_function(wrap_pyfunction!(get_win_indices, m)?)?;
     Ok(())
 }
 
 #[cfg(test)]
 mod tests {
     use crate::get_chances;
+    use crate::get_win_indices;
 
     #[test]
     fn exploration() {
         let chances = get_chances(vec!["As".to_string(), "Ah".to_string()], 2, 100000);
         print!("{:?}", chances)
+    }
+
+    #[test]
+    fn winner_index() {
+        let winner_index = get_win_indices(
+            vec!["As".to_string(), "Ah".to_string(), "Ad".to_string()],
+            vec![
+                vec!["Ks".to_string(), "Kh".to_string()],
+                vec!["Qs".to_string(), "Qh".to_string()],
+            ],
+        );
+        print!("{:?}", winner_index)
     }
 }
