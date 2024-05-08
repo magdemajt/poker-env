@@ -7,6 +7,8 @@ import numpy as np
 from player import RLPlayer, PlayerCycle, Player
 from poker_rules import Deck
 
+from poker_lib import get_chances
+
 
 # fix this
 class Action(Enum):
@@ -20,7 +22,7 @@ class Action(Enum):
 
 INITIAL_MONEY = 100
 SMALL_BLIND = 1
-
+ITERATIONS = 1000
 
 class PokerEnv(gym.Env):
     def __init__(self, player_list: list[Player]):
@@ -61,8 +63,11 @@ class PokerEnv(gym.Env):
         self.deck.shuffle()
 
         self.user_hands = [self.deck.draw_n(2) for _ in range(6)]
-        self.winning_probabilities = [0] * 6  # TODO calculate winning probabilities
+        self.user_hands_encoded = [str(hand) for hand in self.user_hands]
+        self.winning_probabilities = [0] * 6
         self.table_cards = []
+
+        self._calculate_winning_probabilities()
 
         self.round_index = 0
 
@@ -147,6 +152,12 @@ class PokerEnv(gym.Env):
             self.table_cards.append(self.deck.draw_n(1))
         if self.round_index == 4:
             self._resolve_game()
+        self._calculate_winning_probabilities()
+
+    def _calculate_winning_probabilities(self):
+        encoded_table_cards = [str(card) for card in self.table_cards]
+        playing = self.players_playing.sum()
+        self.winning_probabilities = [get_chances(player_cards + encoded_table_cards, playing, ITERATIONS) for player_cards in self.user_hands_encoded]
 
     def _resolve_game(self):
         winning_player = 0  # TODO calculate winning player

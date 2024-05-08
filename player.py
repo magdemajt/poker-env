@@ -38,6 +38,19 @@ class RLPlayer(Player):
     def reset(self):
         pass
 
+
+class HeuristicPlayer(Player):
+
+    def get_action(self, env):
+        pass
+
+    def update(self, reward):
+        pass
+
+    def reset(self):
+        pass
+
+
 class PlayerCycle():
     def __init__(self, players_list):
         self.players_list = players_list

@@ -4,11 +4,23 @@ from enum import Enum
 from typing import Tuple, Optional, List
 import random
 
+
 class Suit(Enum):
     Hearts = 1
     Spades = 2
     Diamonds = 3
     Clubs = 4
+
+    def __str__(self):
+        match self:
+            case Suit.Hearts:
+                return "H"
+            case Suit.Spades:
+                return "S"
+            case Suit.Diamonds:
+                return "D"
+            case Suit.Clubs:
+                return "C"
 
 
 class CardValue(Enum):
@@ -25,6 +37,35 @@ class CardValue(Enum):
     Jack = 11
     Queen = 12
     King = 13
+
+    def __str__(self):
+        match self:
+            case CardValue.Ace:
+                return "A"
+            case CardValue.Two:
+                return "2"
+            case CardValue.Three:
+                return "3"
+            case CardValue.Four:
+                return "4"
+            case CardValue.Five:
+                return "5"
+            case CardValue.Six:
+                return "6"
+            case CardValue.Seven:
+                return "7"
+            case CardValue.Eight:
+                return "8"
+            case CardValue.Nine:
+                return "9"
+            case CardValue.Ten:
+                return "T"
+            case CardValue.Jack:
+                return "J"
+            case CardValue.Queen:
+                return "Q"
+            case CardValue.King:
+                return "K"
 
     def __lt__(self, other):
         if self == CardValue.Ace:
@@ -54,6 +95,7 @@ class CardValue(Enum):
         if isinstance(other, int):
             value = int(self.value)
             return CardValue((value + other) % 13 + 1)
+
     def __hash__(self):
         return self.value
 
@@ -153,10 +195,10 @@ class Hand:
                             and sorted_hand[3].value == CardValue.King)
 
         has_lowest_straight = (sorted_hand[4].value == CardValue.Ace
-                            and sorted_hand[0].value == CardValue.Two
-                            and sorted_hand[1].value == CardValue.Three
-                            and sorted_hand[2].value == CardValue.Four
-                            and sorted_hand[3].value == CardValue.Five)
+                               and sorted_hand[0].value == CardValue.Two
+                               and sorted_hand[1].value == CardValue.Three
+                               and sorted_hand[2].value == CardValue.Four
+                               and sorted_hand[3].value == CardValue.Five)
 
         has_color = sorted_hand[0].suit == sorted_hand[1].suit \
                     and sorted_hand[1].suit == sorted_hand[2].suit \
@@ -167,12 +209,9 @@ class Hand:
             return HandStrength.RoyalFlush, 14
 
         has_straight = has_top_straight or has_lowest_straight or (sorted_hand[0].value == sorted_hand[1].value - 1
-                        and sorted_hand[1].value == sorted_hand[2].value - 1
-                        and sorted_hand[2].value == sorted_hand[3].value - 1
-                        and sorted_hand[3].value == sorted_hand[4].value - 1)
-
-
-
+                                                                   and sorted_hand[1].value == sorted_hand[2].value - 1
+                                                                   and sorted_hand[2].value == sorted_hand[3].value - 1
+                                                                   and sorted_hand[3].value == sorted_hand[4].value - 1)
 
         if has_straight and has_color:
             return HandStrength.StraightFlush, max(sorted_hand, key=lambda x: x.value).value
@@ -271,17 +310,21 @@ class Hand:
 class Deck:
     cards: List[Card]
     drawn_index: int
+
     def __init__(self, seed=None):
         if seed is not None:
             self._random = random.Random(seed)
         else:
             self._random = random.Random()
         self.cards = [Card(suit, value) for suit in Suit for value in CardValue]
+
     def shuffle(self):
         self._random.shuffle(self.cards)
         self.drawn_index = 0
+
     def burn_n(self, n: int):
         self.drawn_index += n
+
     def draw_n(self, n: int):
         self.drawn_index += n
         if self.drawn_index > len(self.cards):
