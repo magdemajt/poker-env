@@ -144,7 +144,7 @@ class PokerEnv(gym.Env):
 
     def _resolve_game(self):
         winning_player = 0  # TODO calculate winning player
-        self.money[winning_player] += sum(self.round_bets[3])
+        self.money[winning_player] += np.sum(self.round_bets)
 
     def _raise(self, player: int, amount: int):
         # if player can't raise the full amount, raise as much as possible
