@@ -330,3 +330,11 @@ class Deck:
         if self.drawn_index > len(self.cards):
             raise ValueError("Not enough cards in the deck")
         return self.cards[self.drawn_index - n:self.drawn_index]
+
+class Action(Enum):
+    FOLD = 0
+    CALL = 1
+    RAISE_5 = 2
+    RAISE_10 = 3
+    RAISE_20 = 4
+    RAISE_50 = 5

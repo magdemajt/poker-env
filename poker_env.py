@@ -6,18 +6,10 @@ import numpy as np
 
 from player import RLPlayer, PlayerCycle, Player
 from poker_lib import get_chances
-from poker_rules import Deck
+from poker_rules import Deck, Action
 
 
 # fix this
-class Action(Enum):
-    FOLD = 0
-    CALL = 1
-    RAISE_5 = 2
-    RAISE_10 = 3
-    RAISE_20 = 4
-    RAISE_50 = 5
-
 
 INITIAL_MONEY = 100
 SMALL_BLIND = 1

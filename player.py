@@ -1,5 +1,10 @@
+import math
+import random
 from abc import ABC, abstractmethod
 from typing import Any
+from poker_rules import Action
+
+import numpy as np
 
 
 class Player(ABC):
@@ -44,7 +49,37 @@ class RLPlayer(Player):
 class HeuristicPlayer(Player):
 
     def get_action(self, observation: dict[str, Any], action_space):
-        pass
+        win_prob = observation['visible_cards_win_probability']
+        money = observation['money']
+        total_on_the_table = np.sum(observation['round_bets'])
+
+        randomized = random.randint(1, 100)
+
+        if randomized == 69:
+            return Action.RAISE_50
+
+
+        if money < 50:
+            # TODO if the player starts this should be adjusted
+            if win_prob >= 0.5:
+                return Action.RAISE_50
+            else:
+                return Action.FOLD
+
+        def get_random_raise_call(action: Action):
+            return random.choice([action, Action.CALL])
+
+        if math.ceil(total_on_the_table * win_prob) > 50:
+            return get_random_raise_call(Action.RAISE_50)
+        elif math.ceil(total_on_the_table * win_prob) > 20:
+            return get_random_raise_call(Action.RAISE_20)
+        elif math.ceil(total_on_the_table * win_prob) > 10:
+            return get_random_raise_call(Action.RAISE_10)
+        elif math.ceil(total_on_the_table * win_prob) > 5:
+            return get_random_raise_call(Action.RAISE_5)
+        else:
+            return get_random_raise_call(Action.FOLD)
+
 
     def update(self, reward):
         pass
