@@ -4,9 +4,10 @@ from random import shuffle
 import gymnasium as gym
 import numpy as np
 
-from player import RLPlayer, PlayerCycle, Player
-from poker_lib import get_chances
+from player import RLPlayer, PlayerCycle, Player, RandomPlayer
+from poker_lib import get_chances, get_win_indices
 from poker_rules import Deck, Action
+from ray.rllib.env import EnvContext
 
 
 # fix this
@@ -17,9 +18,10 @@ ITERATIONS = 1000
 
 
 class PokerEnv(gym.Env):
-    def __init__(self, player_list: list[Player]):
+    # def __init__(self, player_list: list[Player]):
+    def __init__(self, config: EnvContext):
         super(PokerEnv, self).__init__()
-        self.player_list = player_list
+        self.player_list = [RLPlayer(), RandomPlayer(), RandomPlayer(), RandomPlayer(), RandomPlayer(), RandomPlayer()]
         self.deck = Deck()
         self.is_done = False
         self.action_space = gym.spaces.Discrete(6)
@@ -55,7 +57,7 @@ class PokerEnv(gym.Env):
         self.deck.shuffle()
 
         self.user_hands = [self.deck.draw_n(2) for _ in range(6)]
-        self.user_hands_encoded = [str(hand) for hand in self.user_hands]
+        self.user_hands_encoded = [[str(card) for card in hand] for hand in self.user_hands]
         self.winning_probabilities = [0] * 6
         self.table_cards = []
 
@@ -90,14 +92,14 @@ class PokerEnv(gym.Env):
         return observation_rl, reward, self.is_done, False, {}
 
     def apply_action(self, player: int, action: Action):
-        if action == Action.FOLD:
+        if action == Action.FOLD.value:
             self.players_playing[player] = False
             # if the player is an RL player, the game doesn't need to be simulated anymore
             if isinstance(self.player_list[player], RLPlayer):
                 self.is_done = True
             if sum(self.players_playing) == 1:
                 self._resolve_game()
-        elif action == Action.CALL:
+        elif action == Action.CALL.value:
             self.money[player] -= max(self.round_bets[self.round_index]) - self.round_bets[self.round_index, player]
             self.round_bets[self.round_index, player] = max(self.round_bets[self.round_index])
 
@@ -105,26 +107,26 @@ class PokerEnv(gym.Env):
             playing_bets = [self.round_bets[self.round_index, i] for i in range(6) if self.players_playing[i]]
             if playing_bets.count(playing_bets[0]) == len(playing_bets):
                 self.next_round()
-        elif action == Action.RAISE_5:
+        elif action == Action.RAISE_5.value:
             self._raise(player, 5)
-        elif action == Action.RAISE_10:
+        elif action == Action.RAISE_10.value:
             self._raise(player, 10)
-        elif action == Action.RAISE_20:
+        elif action == Action.RAISE_20.value:
             self._raise(player, 20)
-        elif action == Action.RAISE_50:
+        elif action == Action.RAISE_50.value:
             self._raise(player, 50)
         else:
-            raise ValueError("Invalid action")
+            raise ValueError(f"Invalid action, action: {action}")
 
     def next_round(self):
         self.round_index += 1
         if self.round_index == 1:
             self.table_cards = self.deck.draw_n(3)
         elif self.round_index == 2:
-            self.table_cards.append(self.deck.draw_n(1))
+            self.table_cards += self.deck.draw_n(1)
         elif self.round_index == 3:
-            self.table_cards.append(self.deck.draw_n(1))
-        if self.round_index == 4:
+            self.table_cards += self.deck.draw_n(1)
+        elif self.round_index == 4:
             self._resolve_game()
         self._calculate_winning_probabilities()
 
@@ -135,8 +137,11 @@ class PokerEnv(gym.Env):
                                       player_cards in self.user_hands_encoded]
 
     def _resolve_game(self):
-        winning_player = 0  # TODO calculate winning player
-        self.money[winning_player] += np.sum(self.round_bets)
+        winning_players = get_win_indices([str(card) for card in self.table_cards], self.user_hands_encoded)
+        prize_per_winner = np.sum(self.round_bets) // len(winning_players)
+        for winner in winning_players:
+            self.money[winner] += prize_per_winner
+        self.is_done = True
 
     def _raise(self, player: int, amount: int):
         # if player can't raise the full amount, raise as much as possible
@@ -146,8 +151,8 @@ class PokerEnv(gym.Env):
 
     def _player_observation(self, player: int, rl_player: bool = False):
         return {
-            'visible_cards_win_probability': self.winning_probabilities[player],
-            'money': self.money[player],
+            'visible_cards_win_probability': np.array([self.winning_probabilities[player]], dtype='float32'),
+            'money': np.array([self.money[player]], dtype='int32'),
             'players_playing': self.players_playing,
             'round_bets': self.round_bets,
             'player_ind': self.encoded_rl_id if rl_player else player,
@@ -156,6 +161,8 @@ class PokerEnv(gym.Env):
     def _play_non_rl_player(self, player_id: int):
         if not self.players_playing[player_id]:
             self.player_cycle.next_player()
+            return
+        if self.is_done:
             return
         player_observation = self._player_observation(player_id)
         self.apply_action(player_id, self.player_list[player_id].get_action(player_observation, self.action_space))

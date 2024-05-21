@@ -8,9 +8,6 @@ import numpy as np
 
 
 class Player(ABC):
-    def __init__(self, money):
-        self.money = money
-
     @abstractmethod
     def get_action(self, observation: dict[str, Any], action_space: Any):
         raise NotImplementedError
@@ -37,20 +34,20 @@ class RandomPlayer(Player):
 
 class RLPlayer(Player):
     def get_action(self, observation: dict[str, Any], action_space: Any):
-        pass
+        raise NotImplementedError
 
     def update(self, reward):
-        pass
+        raise NotImplementedError
 
     def reset(self):
-        pass
+        raise NotImplementedError
 
 
 class HeuristicPlayer(Player):
 
     def get_action(self, observation: dict[str, Any], action_space):
-        win_prob = observation['visible_cards_win_probability']
-        money = observation['money']
+        win_prob = observation['visible_cards_win_probability'][0]
+        money = observation['money'][0]
         total_on_the_table = np.sum(observation['round_bets'])
 
         randomized = random.randint(1, 100)

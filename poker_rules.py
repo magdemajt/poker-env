@@ -14,13 +14,13 @@ class Suit(Enum):
     def __str__(self):
         match self:
             case Suit.Hearts:
-                return "H"
+                return "h"
             case Suit.Spades:
-                return "S"
+                return "s"
             case Suit.Diamonds:
-                return "D"
+                return "d"
             case Suit.Clubs:
-                return "C"
+                return "c"
 
 
 class CardValue(Enum):
@@ -41,7 +41,7 @@ class CardValue(Enum):
     def __str__(self):
         match self:
             case CardValue.Ace:
-                return "A"
+                return "a"
             case CardValue.Two:
                 return "2"
             case CardValue.Three:
@@ -59,13 +59,13 @@ class CardValue(Enum):
             case CardValue.Nine:
                 return "9"
             case CardValue.Ten:
-                return "T"
+                return "t"
             case CardValue.Jack:
-                return "J"
+                return "j"
             case CardValue.Queen:
-                return "Q"
+                return "q"
             case CardValue.King:
-                return "K"
+                return "k"
 
     def __lt__(self, other):
         if self == CardValue.Ace:
@@ -109,10 +109,10 @@ class Card:
         self.value = value
 
     def __str__(self):
-        return f"{self.value} of {self.suit}"
+        return f"{self.value}{self.suit}"
 
     def __repr__(self):
-        return f"{self.value} of {self.suit}"
+        return f"{self.value}{self.suit}"
 
     def __eq__(self, other):
         return self.value == other.value
