@@ -77,6 +77,7 @@ class PokerEnv(gym.Env):
         return observation_rl, {}
 
     def step(self, action: Action):
+        print("step, action: ", action)
         # first action is played by the RL player
         self.apply_action(self.player_cycle.get_player_index(), action)
         self.player_cycle.next_player()
@@ -89,9 +90,12 @@ class PokerEnv(gym.Env):
         reward = 0
         if self.is_done:
             reward = self.money[self.rl_player_id] if self.money[self.rl_player_id] > 0 else -20
+        print("reward: ", reward, "is_done: ", self.is_done)
         return observation_rl, reward, self.is_done, False, {}
 
     def apply_action(self, player: int, action: Action):
+        if self.money[player] == 0:
+            action = Action.CALL
         if action == Action.FOLD.value:
             self.players_playing[player] = False
             # if the player is an RL player, the game doesn't need to be simulated anymore
@@ -119,6 +123,7 @@ class PokerEnv(gym.Env):
             raise ValueError(f"Invalid action, action: {action}")
 
     def next_round(self):
+        print("next_round")
         self.round_index += 1
         if self.round_index == 1:
             self.table_cards = self.deck.draw_n(3)
@@ -141,13 +146,16 @@ class PokerEnv(gym.Env):
         prize_per_winner = np.sum(self.round_bets) // len(winning_players)
         for winner in winning_players:
             self.money[winner] += prize_per_winner
+        print("winning players: ", winning_players)
         self.is_done = True
 
     def _raise(self, player: int, amount: int):
         # if player can't raise the full amount, raise as much as possible
-        amount = min(amount, self.money[player])
-        self.round_bets[self.round_index, player] += amount
-        self.money[player] -= amount
+        max_round_bet = max(self.round_bets[self.round_index])
+        new_max = min(max_round_bet + amount, self.money[player])
+        bet = new_max - self.round_bets[self.round_index, player]
+        self.round_bets[self.round_index, player] += bet
+        self.money[player] -= bet
 
     def _player_observation(self, player: int, rl_player: bool = False):
         return {
