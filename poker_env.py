@@ -143,9 +143,11 @@ class PokerEnv(gym.Env):
 
     def _resolve_game(self):
         winning_players = get_win_indices([str(card) for card in self.table_cards], self.user_hands_encoded)
-        prize_per_winner = np.sum(self.round_bets) // len(winning_players)
+        still_playing = self.players_playing
+        prize_per_winner = np.sum(self.round_bets) // still_playing.sum()
         for winner in winning_players:
-            self.money[winner] += prize_per_winner
+            if still_playing[winner]:
+                self.money[winner] += prize_per_winner
         print("winning players: ", winning_players)
         self.is_done = True
 
