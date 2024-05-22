@@ -1,16 +1,12 @@
-from enum import Enum
 from random import shuffle
 
 import gymnasium as gym
 import numpy as np
 
-from player import RLPlayer, PlayerCycle, Player, RandomPlayer
+from player import RLPlayer, PlayerCycle
 from poker_lib import get_chances, get_win_indices
 from poker_rules import Deck, Action
 from ray.rllib.env import EnvContext
-
-
-# fix this
 
 INITIAL_MONEY = 100
 SMALL_BLIND = 1
@@ -18,10 +14,9 @@ ITERATIONS = 1000
 
 
 class PokerEnv(gym.Env):
-    # def __init__(self, player_list: list[Player]):
     def __init__(self, config: EnvContext):
         super(PokerEnv, self).__init__()
-        self.player_list = [RLPlayer(), RandomPlayer(), RandomPlayer(), RandomPlayer(), RandomPlayer(), RandomPlayer()]
+        self.player_list = config["player_list"]
         self.deck = Deck()
         self.is_done = False
         self.action_space = gym.spaces.Discrete(6)
@@ -142,7 +137,8 @@ class PokerEnv(gym.Env):
     def _resolve_game(self):
 
         still_playing = [player for player in self.players_playing]
-        winning_players = get_win_indices([str(card) for card in self.table_cards], self.user_hands_encoded, still_playing)
+        winning_players = get_win_indices([str(card) for card in self.table_cards], self.user_hands_encoded,
+                                          still_playing)
         prize_per_winner = np.sum(self.round_bets) // len(winning_players)
         for winner in winning_players:
             self.money[winner] += prize_per_winner
