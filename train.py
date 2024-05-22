@@ -14,11 +14,12 @@ if __name__ == '__main__':
     config.num_gpus = 1
     config.output = "ray_output"
     config.train_batch_size = 128
-    algo = config.build(env=PokerEnv)
-    for i in range(10):
+    config.environment(PokerEnv)
+    algo = config.build()
+    for i in range(1000):
         result = algo.train()
-        print(pretty_print(result))
-        # if i % 100 == 0:
-        #     checkpoint = algo.save()
-        #     print("checkpoint saved at", checkpoint)
+        if i % 10 == 0:
+            # checkpoint = algo.save()
+            print("epoch ", i, ", result ", result["episode_reward_mean"])
+            # print("checkpoint saved at", checkpoint)
     ray.shutdown()

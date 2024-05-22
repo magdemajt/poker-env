@@ -27,7 +27,7 @@ class PokerEnv(gym.Env):
         self.action_space = gym.spaces.Discrete(6)
         self.observation_space = gym.spaces.Dict({
             'visible_cards_win_probability': gym.spaces.Box(low=0, high=1, shape=(1,), dtype='float32'),
-            'money': gym.spaces.Box(low=0, high=INITIAL_MONEY, dtype='int32'),
+            'money': gym.spaces.Box(low=0, high=np.inf, dtype='int32'),
             'players_playing': gym.spaces.MultiBinary(6),
             'round_bets': gym.spaces.Box(low=0, high=INITIAL_MONEY, shape=(4, 6), dtype='int32'),
             'player_ind': gym.spaces.MultiBinary(6),
@@ -40,6 +40,7 @@ class PokerEnv(gym.Env):
         # change the order of the players
         shuffle(self.player_list)
         self.player_cycle = PlayerCycle(self.player_list)
+        self.is_done = False
 
         self.players_playing = np.array([True] * 6)
         self.money = np.array([INITIAL_MONEY] * 6)
@@ -77,7 +78,6 @@ class PokerEnv(gym.Env):
         return observation_rl, {}
 
     def step(self, action: Action):
-        print("step, action: ", action)
         # first action is played by the RL player
         self.apply_action(self.player_cycle.get_player_index(), action)
         self.player_cycle.next_player()
@@ -90,12 +90,11 @@ class PokerEnv(gym.Env):
         reward = 0
         if self.is_done:
             reward = self.money[self.rl_player_id] if self.money[self.rl_player_id] > 0 else -20
-        print("reward: ", reward, "is_done: ", self.is_done)
         return observation_rl, reward, self.is_done, False, {}
 
     def apply_action(self, player: int, action: Action):
         if self.money[player] == 0:
-            action = Action.CALL
+            action = Action.CALL.value
         if action == Action.FOLD.value:
             self.players_playing[player] = False
             # if the player is an RL player, the game doesn't need to be simulated anymore
@@ -123,7 +122,6 @@ class PokerEnv(gym.Env):
             raise ValueError(f"Invalid action, action: {action}")
 
     def next_round(self):
-        print("next_round")
         self.round_index += 1
         if self.round_index == 1:
             self.table_cards = self.deck.draw_n(3)
@@ -148,7 +146,6 @@ class PokerEnv(gym.Env):
         for winner in winning_players:
             if still_playing[winner]:
                 self.money[winner] += prize_per_winner
-        print("winning players: ", winning_players)
         self.is_done = True
 
     def _raise(self, player: int, amount: int):
