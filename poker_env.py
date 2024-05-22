@@ -88,6 +88,8 @@ class PokerEnv(gym.Env):
         return observation_rl, reward, self.is_done, False, {}
 
     def apply_action(self, player: int, action: Action):
+        if self.is_done:
+            return
         if self.money[player] == 0:
             action = Action.CALL.value
         if action == Action.FOLD.value:
@@ -135,7 +137,6 @@ class PokerEnv(gym.Env):
                                       player_cards in self.user_hands_encoded]
 
     def _resolve_game(self):
-
         still_playing = [player for player in self.players_playing]
         winning_players = get_win_indices([str(card) for card in self.table_cards], self.user_hands_encoded,
                                           still_playing)
@@ -151,6 +152,9 @@ class PokerEnv(gym.Env):
         bet = new_max - self.round_bets[self.round_index, player]
         self.round_bets[self.round_index, player] += bet
         self.money[player] -= bet
+        # if nobody can raise anymore, go to the next round
+        if sum(self.money) == 0:
+            self._resolve_game()
 
     def _player_observation(self, player: int, rl_player: bool = False):
         return {

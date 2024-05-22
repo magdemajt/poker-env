@@ -51,4 +51,4 @@ def train_new(num_epochs: int, experiment_name: str = "ray_output"):
 
 if __name__ == '__main__':
     train_new(10, "player_list")
-    train_from_checkpoint("ray_output/checkpoint0_1633940004.3669786", 10)
+    # train_from_checkpoint("ray_output/checkpoint0_1633940004.3669786", 10)
