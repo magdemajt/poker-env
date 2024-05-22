@@ -140,12 +140,12 @@ class PokerEnv(gym.Env):
                                       player_cards in self.user_hands_encoded]
 
     def _resolve_game(self):
-        winning_players = get_win_indices([str(card) for card in self.table_cards], self.user_hands_encoded)
-        still_playing = self.players_playing
-        prize_per_winner = np.sum(self.round_bets) // still_playing.sum()
+
+        still_playing = [player for player in self.players_playing]
+        winning_players = get_win_indices([str(card) for card in self.table_cards], self.user_hands_encoded, still_playing)
+        prize_per_winner = np.sum(self.round_bets) // len(winning_players)
         for winner in winning_players:
-            if still_playing[winner]:
-                self.money[winner] += prize_per_winner
+            self.money[winner] += prize_per_winner
         self.is_done = True
 
     def _raise(self, player: int, amount: int):

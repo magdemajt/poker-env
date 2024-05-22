@@ -87,7 +87,7 @@ fn get_chances(cards: Vec<String>, num_players: u32, iterations: u32) -> f32 {
 }
 
 #[pyfunction]
-fn get_win_indices(table_cards: Vec<String>, players_hands: Vec<Vec<String>>) -> Vec<u8> {
+fn get_win_indices(table_cards: Vec<String>, players_hands: Vec<Vec<String>>, playing_players: Vec<u8>) -> Vec<u8> {
     let table_cards = get_cards_from_string_vec(table_cards);
     let players_hands = players_hands
         .iter()
@@ -110,7 +110,13 @@ fn get_win_indices(table_cards: Vec<String>, players_hands: Vec<Vec<String>>) ->
         .map(|x| Hand::new_with_cards(x.clone()).rank())
         .collect::<Vec<Rank>>();
 
-    let max_rank = ranks.iter().max().unwrap();
+    let max_rank = ranks.iter().enumerate().filter_map(|(i, rank)| {
+        if playing_players[i] != 0 {
+            Some(rank)
+        } else {
+            None
+        }
+    }).max().unwrap();
     return ranks
         .iter()
         .enumerate()
@@ -145,6 +151,7 @@ mod tests {
                 vec!["Ks".to_string(), "Kh".to_string()],
                 vec!["Qs".to_string(), "Qh".to_string()],
             ],
+            vec![1, 1],
         );
         print!("{:?}", winner_index)
     }
