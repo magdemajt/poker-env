@@ -1,7 +1,7 @@
 # Written by Mateusz Wejman
 from __future__ import annotations
 from enum import Enum
-from typing import Tuple, Optional, List
+from typing import List
 import random
 
 
@@ -330,6 +330,7 @@ class Deck:
         if self.drawn_index > len(self.cards):
             raise ValueError("Not enough cards in the deck")
         return self.cards[self.drawn_index - n:self.drawn_index]
+
 
 class Action(Enum):
     FOLD = 0
