@@ -148,7 +148,7 @@ class PokerEnv(gym.Env):
     def _raise(self, player: int, amount: int):
         # if player can't raise the full amount, raise as much as possible
         max_round_bet = max(self.round_bets[self.round_index])
-        new_max = max_round_bet + min(amount, self.money[player])
+        new_max = min(max_round_bet + amount, self.money[player] + self.round_bets[self.round_index, player])
         bet = new_max - self.round_bets[self.round_index, player]
         self.round_bets[self.round_index, player] += bet
         self.money[player] -= bet
