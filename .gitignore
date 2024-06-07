@@ -2,3 +2,4 @@ target/
 venv/
 __pycache__/
 player_list/
+ray_output/
