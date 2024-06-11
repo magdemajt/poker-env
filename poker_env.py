@@ -88,18 +88,19 @@ class PokerEnv(gym.Env):
         return observation_rl, reward, self.is_done, False, {}
 
     def apply_action(self, player: int, action: Action):
+        action = Action(action)  # make sure that the action is of the correct type
         if self.is_done:
             return
         if self.money[player] == 0:
-            action = Action.CALL.value
-        if action == Action.FOLD.value:
+            action = Action.CALL
+        if action == Action.FOLD:
             self.players_playing[player] = False
             # if the player is an RL player, the game doesn't need to be simulated anymore
             if isinstance(self.player_list[player], RLPlayer):
                 self.is_done = True
             if sum(self.players_playing) == 1:
                 self._resolve_game()
-        elif action == Action.CALL.value:
+        elif action == Action.CALL:
             self.money[player] -= max(self.round_bets[self.round_index]) - self.round_bets[self.round_index, player]
             self.round_bets[self.round_index, player] = max(self.round_bets[self.round_index])
 
@@ -107,13 +108,13 @@ class PokerEnv(gym.Env):
             playing_bets = [self.round_bets[self.round_index, i] for i in range(6) if self.players_playing[i]]
             if playing_bets.count(playing_bets[0]) == len(playing_bets):
                 self.next_round()
-        elif action == Action.RAISE_1.value:
+        elif action == Action.RAISE_1:
             self._raise(player, 1)
-        elif action == Action.RAISE_5.value:
+        elif action == Action.RAISE_5:
             self._raise(player, 5)
-        elif action == Action.RAISE_10.value:
+        elif action == Action.RAISE_10:
             self._raise(player, 10)
-        elif action == Action.RAISE_20.value:
+        elif action == Action.RAISE_20:
             self._raise(player, 20)
         else:
             raise ValueError(f"Invalid action, action: {action}")
