@@ -107,14 +107,14 @@ class PokerEnv(gym.Env):
             playing_bets = [self.round_bets[self.round_index, i] for i in range(6) if self.players_playing[i]]
             if playing_bets.count(playing_bets[0]) == len(playing_bets):
                 self.next_round()
+        elif action == Action.RAISE_1.value:
+            self._raise(player, 1)
         elif action == Action.RAISE_5.value:
             self._raise(player, 5)
         elif action == Action.RAISE_10.value:
             self._raise(player, 10)
         elif action == Action.RAISE_20.value:
             self._raise(player, 20)
-        elif action == Action.RAISE_50.value:
-            self._raise(player, 50)
         else:
             raise ValueError(f"Invalid action, action: {action}")
 

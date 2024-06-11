@@ -335,7 +335,7 @@ class Deck:
 class Action(Enum):
     FOLD = 0
     CALL = 1
-    RAISE_5 = 2
-    RAISE_10 = 3
-    RAISE_20 = 4
-    RAISE_50 = 5
+    RAISE_1 = 2
+    RAISE_5 = 3
+    RAISE_10 = 4
+    RAISE_20 = 5
