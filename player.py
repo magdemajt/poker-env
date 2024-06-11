@@ -53,27 +53,27 @@ class HeuristicPlayer(Player):
         randomized = random.randint(1, 100)
 
         if randomized == 69:
-            return Action.RAISE_50
+            return Action.RAISE_20
 
 
         if money < 50:
             # TODO if the player starts this should be adjusted
             if win_prob >= 0.5:
-                return Action.RAISE_50
+                return Action.RAISE_20
             else:
                 return Action.FOLD
 
         def get_random_raise_call(action: Action):
             return random.choice([action, Action.CALL])
 
-        if math.ceil(total_on_the_table * win_prob) > 50:
-            return get_random_raise_call(Action.RAISE_50)
-        elif math.ceil(total_on_the_table * win_prob) > 20:
+        if math.ceil(total_on_the_table * win_prob) > 20:
             return get_random_raise_call(Action.RAISE_20)
         elif math.ceil(total_on_the_table * win_prob) > 10:
             return get_random_raise_call(Action.RAISE_10)
-        elif math.ceil(total_on_the_table * win_prob) > 5:
+        elif math.ceil(total_on_the_table * win_prob) > 50:
             return get_random_raise_call(Action.RAISE_5)
+        elif math.ceil(total_on_the_table * win_prob) > 1:
+            return get_random_raise_call(Action.RAISE_1)
         else:
             return get_random_raise_call(Action.FOLD)
 

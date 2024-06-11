@@ -3,7 +3,7 @@ from ray.rllib.algorithms.ppo import PPOConfig
 from ray.rllib.algorithms.algorithm import Algorithm
 
 from model import MODEL_DEFAULTS
-from player import RLPlayer, RandomPlayer
+from player import RLPlayer, RandomPlayer, HeuristicPlayer
 from ray.tune.logger import pretty_print
 from poker_env import PokerEnv
 from time import time
