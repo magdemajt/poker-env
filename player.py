@@ -43,6 +43,36 @@ class RLPlayer(Player):
         raise NotImplementedError
 
 
+class AggressivePlayer(Player):
+    def get_action(self, observation: dict[str, Any], action_space: Any):
+        win_prob = observation['visible_cards_win_probability'][0]
+        money = observation['money'][0]
+
+        if money < 30:
+            return Action.RAISE_20
+
+        if win_prob < np.random.uniform(0, 0.1):
+            return Action.FOLD
+
+        if win_prob < np.random.uniform(0.8, 0.18):
+            return Action.CALL
+
+        if win_prob < np.random.uniform(0.15, 0.25):
+            return Action.RAISE_5
+
+        if win_prob < np.random.uniform(0.2, 0.3):
+            return Action.RAISE_10
+
+        return Action.RAISE_20
+
+    def update(self, reward):
+        pass
+
+    def reset(self):
+        pass
+
+
+
 class HeuristicPlayer(Player):
 
     def get_action(self, observation: dict[str, Any], action_space):
@@ -70,7 +100,7 @@ class HeuristicPlayer(Player):
             return get_random_raise_call(Action.RAISE_20)
         elif math.ceil(total_on_the_table * win_prob) > 10:
             return get_random_raise_call(Action.RAISE_10)
-        elif math.ceil(total_on_the_table * win_prob) > 50:
+        elif math.ceil(total_on_the_table * win_prob) > 5:
             return get_random_raise_call(Action.RAISE_5)
         elif math.ceil(total_on_the_table * win_prob) > 1:
             return get_random_raise_call(Action.RAISE_1)
